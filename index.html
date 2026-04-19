@@ -1,0 +1,274 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cube Timer (3x3)</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- LEFT: CFOP MANUAL -->
+    <aside class="panel panel-left" aria-label="CFOP Manual">
+      <div class="panel-header">
+        <h2>CFOP Manual</h2>
+        <button id="cfopCollapseBtn" class="btn btn-ghost mobile-only" aria-expanded="true" aria-controls="cfopBody">
+          Collapse
+        </button>
+      </div>
+
+      <div id="cfopBody" class="panel-body">
+        <div class="tabs" role="tablist" aria-label="CFOP Tabs">
+          <button class="tab active" id="tab-overview" role="tab" aria-selected="true" data-view="overview">Overview</button>
+          <button class="tab" id="tab-oll" role="tab" aria-selected="false" data-view="oll">OLL</button>
+          <button class="tab" id="tab-pll" role="tab" aria-selected="false" data-view="pll">PLL</button>
+        </div>
+
+        <div id="cfopContent" class="cfop-content" aria-live="polite"></div>
+
+        <div class="cfop-footnote">
+          <p>
+            Algorithms shown are OLL and PLL entered by Matthew. Edit <code>cfop-data.json</code> to add your own.
+          </p>
+          <div class="file-loader">
+            <label class="file-btn">
+              Load cfop-data.json
+              <input id="cfopFileInput" type="file" accept=".json,application/json" />
+            </label>
+            <small class="muted" id="cfopLoadNote"></small>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER: SCRAMBLE + TIMER -->
+    <main class="center" aria-label="Timer">
+<div class="site-title">
+  <h1>Matthew's Rubiks Cube Timer</h1>
+</div>
+      <section class="scramble-wrap">
+        <div class="scramble-row">
+          <div id="scrambleText" class="scramble" aria-label="Scramble"></div>
+        </div>
+      
+  
+<div class="scramble-actions">
+  <button id="newScrambleBtn" class="btn">New Scramble</button>
+  <button id="copyScrambleBtn" class="btn btn-ghost">Copy</button>
+  <button id="addManualBtn" class="btn btn-ghost">Add Time</button>
+</div>
+
+      </section>
+
+
+
+
+      <section class="timer-wrap">
+<div id="inspectionDisplay" class="inspection" aria-live="polite"></div>       
+      
+ <div id="timerDisplay" class="timer" aria-label="Timer display">0.00</div>
+ <div class="hint">
+          Press <kbd>Space</kbd> to start/stop
+        </div>
+        <div id="timerStateHint" class="state-hint" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <!-- RIGHT: SOLVES + STATS -->
+    
+
+<aside class="panel panel-right" aria-label="Solves and stats">
+
+
+<div class="panel-header">
+  <div class="solves-header-left">
+    <h2>Solves <span id="solveCount" class="solve-count">(0)</span></h2>
+
+
+      
+
+
+
+    <div class="session-picker">
+      <label for="sessionSelect">Person</label>
+      <select id="sessionSelect" aria-label="Person/session select">
+        <option value="1">Matthew</option>
+        <option value="2">Steven</option>
+        <option value="3">Person 3</option>
+        <option value="4">Person 4</option>
+        <option value="5">Person 5</option>
+      </select>
+    </div>
+  </div>
+
+  <button id="clearSolvesBtn" class="btn btn-danger">Clear person</button>
+
+        
+      </div>
+
+      <div class="panel-body">
+        <section class="stats" aria-label="Stats">
+          <div class="stat">
+            <div class="stat-label">Best</div>
+            <div id="statBest" class="stat-value">—</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Ao5</div>
+            <div id="statAo5" class="stat-value">—</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Ao12</div>
+            <div id="statAo12" class="stat-value">—</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Ao100</div>
+            <div id="statAo100" class="stat-value">—</div>
+          </div>
+
+	<div class="stat">
+ 	 <div class="stat-label">A</div>
+  	<div id="statA" class="stat-value">—</div>
+	</div>	
+
+        </section>
+
+        <section class="solve-list-wrap" aria-label="Solve list">
+          <div id="solveList" class="solve-list"></div>
+        </section>
+      </div>
+    </aside>
+  </div>
+
+  <!-- OVERLAY: FULL OLL/PLL REFERENCE -->
+  <div id="cfopOverlay" class="overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="overlay-card" role="document">
+      <div class="overlay-header">
+        <h3 id="overlayTitle">Reference</h3>
+        <div class="overlay-actions">
+          <button id="overlayCloseBtn" class="btn btn-ghost" aria-label="Close reference">Close</button>
+        </div>
+      </div>
+      <div id="overlayContent" class="overlay-content"></div>
+    </div>
+  </div>
+
+
+<!-- Fireworks / Confetti layer -->
+<canvas id="fireworksCanvas" class="fireworks" aria-hidden="true"></canvas>
+
+<!-- Solve Penalty Editor Modal -->
+<div id="solveModal" class="modal" aria-hidden="true">
+  <div class="modal-backdrop" data-close="true"></div>
+
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="solveModalTitle">
+    <div class="modal-header">
+      <h3 id="solveModalTitle">Edit Solve</h3>
+      <button id="solveModalClose" class="btn btn-ghost" type="button">Close</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-row">
+        <div class="muted">Raw time</div>
+        <div id="modalRawTime" class="modal-value">—</div>
+      </div>
+
+      <div class="modal-row">
+        <div class="muted">Adjusted</div>
+        <div id="modalAdjustedTime" class="modal-value">—</div>
+      </div>
+
+      <div class="modal-row">
+        <div class="muted">Status</div>
+        <div id="modalPenalty" class="modal-value">OK</div>
+      </div>
+
+<div class="modal-row">
+  <div class="muted">Quick Notes</div>
+  <div style="flex:1; display:flex; flex-direction:column; align-items:stretch; gap:8px;">
+    <textarea id="modalQuickNote" class="text-area" rows="2" placeholder="e.g. OLL Skip"></textarea>
+    <button id="modalSaveNoteBtn" class="btn" type="button">Save Note</button>
+  </div>
+</div>
+
+      <div class="modal-actions">
+        <button id="penaltyOK" class="pill" type="button">OK</button>
+        <button id="penaltyP2" class="pill" type="button">+2</button>
+        <button id="penaltyDNF" class="pill dnf" type="button">DNF</button>
+        <span class="spacer"></span>
+        <button id="modalDeleteSolve" class="btn btn-danger" type="button">Delete</button>
+      </div>
+
+      <div class="muted" style="margin-top:10px; font-size:12px;">
+        Shortcuts (while this editor is open): <strong>2</strong>=+2, <strong>D</strong>=DNF, <strong>O</strong>/<strong>0</strong>=OK, <strong>Esc</strong>=Close
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Scramble Preview (bottom-left) -->
+<div id="scramblePreview" class="scramble-preview">
+  <div class="preview-head">
+    <div class="preview-title">Scramble Preview</div>
+    <button id="togglePreviewBtn" class="preview-toggle" type="button">Hide</button>
+  </div>
+  <div id="cubeNet" class="cube-net"></div>
+</div>
+
+<!-- Manual Time Modal -->
+<div id="manualModal" class="modal" aria-hidden="true">
+  <div class="modal-backdrop" data-close="true"></div>
+
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="manualModalTitle">
+    <div class="modal-header">
+      <h3 id="manualModalTitle">Add Manual Time</h3>
+      <button id="manualModalClose" class="btn btn-ghost" type="button">Close</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-row" style="border-bottom:none; padding-bottom:0;">
+        <div class="muted">Time</div>
+        <div style="flex:1; display:flex; justify-content:flex-end;">
+          <input id="manualTimeInput" class="text-input" type="text"
+                 placeholder="e.g. 12.34 or 1:23.45" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="muted" style="margin-top:6px; font-size:12px;">
+        Formats supported: <strong>12.34</strong>, <strong>83.2</strong>, <strong>mm:ss.xx</strong> (e.g. 1:23.45)
+      </div>
+
+      <div class="modal-row" style="margin-top:10px;">
+        <div class="muted">Scramble</div>
+        <div style="flex:1; display:flex; justify-content:flex-end;">
+          <textarea id="manualScrambleInput" class="text-area" rows="2"
+                    placeholder="Leave as current scramble or type your own"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-row">
+        <div class="muted">Penalty</div>
+        <div class="modal-actions" style="margin:0;">
+          <button id="manualPenaltyOK" class="pill active" type="button">OK</button>
+          <button id="manualPenaltyP2" class="pill" type="button">+2</button>
+          <button id="manualPenaltyDNF" class="pill dnf" type="button">DNF</button>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:14px;">
+        <button id="manualSaveBtn" class="btn" type="button">Save</button>
+        <button id="manualCancelBtn" class="btn btn-ghost" type="button">Cancel</button>
+      </div>
+
+      <div id="manualError" class="muted" style="margin-top:10px; color: rgba(255,77,77,0.95); font-weight:800;"></div>
+    </div>
+  </div>
+</div>
+
+
+<script src="app.js" defer></script>
+
+  
+</body>
+</html>
