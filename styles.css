@@ -791,3 +791,57 @@ code{
 .text-area:focus{
   border-color: rgba(78,161,255,0.55);
 }
+/* Ao5 modal list */
+.ao-list{
+  display: grid;
+  gap: 10px;
+}
+
+.ao-row{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+}
+
+.ao-left{
+  display: grid;
+  gap: 4px;
+}
+
+.ao-time{
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.ao-meta{
+  color: rgba(255,255,255,0.55);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+/* Best/Worst highlight */
+.ao-row.best{
+  border-color: rgba(46, 204, 113, 0.55);
+  background: rgba(46, 204, 113, 0.10);
+}
+.ao-row.worst{
+  border-color: rgba(255, 77, 77, 0.60);
+  background: rgba(255, 77, 77, 0.12);
+}
+
+.mini-best{ color: rgba(46, 204, 113, 0.95); font-weight: 900; }
+.mini-worst{ color: rgba(255, 77, 77, 0.95); font-weight: 900; }
+
+/* Make Ao5 look clickable */
+#statAo5{
+  cursor: pointer;
+}
+#statAo5:hover{
+  text-decoration: underline;
+}
+

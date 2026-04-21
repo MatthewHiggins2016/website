@@ -103,6 +103,13 @@ const elModalDeleteSolve = document.getElementById("modalDeleteSolve");
 const elModalQuickNote = document.getElementById("modalQuickNote");
 const elModalSaveNoteBtn = document.getElementById("modalSaveNoteBtn");
 
+// Ao5 details modal refs
+const elAoModal = document.getElementById("aoModal");
+const elAoModalClose = document.getElementById("aoModalClose");
+const elAoList = document.getElementById("aoList");
+
+// We'll attach click to the Ao5 tile (not just the number)
+const elAo5Tile = document.getElementById("statAo5")?.closest(".stat");
 
 const LS_CURRENT_SESSION_KEY = "cubeTimer_currentSession";
 
@@ -350,12 +357,14 @@ function applyScramble(scr) {
 }
 
 // Build cube net DOM
+
 function buildCubeNet() {
+  if (!elCubeNet) return;          // ✅ prevent crash
   elCubeNet.innerHTML = "";
   ["U","L","F","R","B","D"].forEach(f => {
     const face = document.createElement("div");
     face.className = `face ${f}`;
-    for (let i=0;i<9;i++) {
+    for (let i = 0; i < 9; i++) {
       const s = document.createElement("div");
       s.className = "sticker";
       face.appendChild(s);
@@ -1036,7 +1045,82 @@ if (s.note && String(s.note).trim().length > 0) {
     elSolveList.appendChild(item);
   }
 }
+
+function renderAoDetails(n) {
+  if (!elAoList) return;
+
+  const recent = solves.slice(0, n);
+
+  if (recent.length < n) {
+    elAoList.innerHTML = `<div class="muted">Need ${n} solves to show Ao${n} details.</div>`;
+    return;
+  }
+
+  // Compute adjusted time per solve. DNF => Infinity so it can be "worst"
+  const rows = recent.map((s, idx) => {
+    const adj = getAdjustedTimeMs(s);
+    return {
+      solve: s,
+      idx,
+      adjustedMs: adj == null ? Infinity : adj
+    };
+  });
+
+  // Best = smallest adjusted time (ignores DNF because that's Infinity)
+  const best = rows.reduce((min, r) => (r.adjustedMs < min.adjustedMs ? r : min), rows[0]);
+
+  // Worst = largest adjusted time (DNF becomes Infinity and will win)
+  const worst = rows.reduce((max, r) => (r.adjustedMs > max.adjustedMs ? r : max), rows[0]);
+
+  // Render list
+  elAoList.innerHTML = "";
+  rows.forEach(r => {
+    const s = r.solve;
+
+    // Display time text with penalties respected
+    let timeText = "";
+    if (normalizePenalty(s.penalty) === "DNF" || r.adjustedMs === Infinity) {
+      timeText = "DNF";
+    } else {
+      timeText = formatTime(r.adjustedMs);
+    }
+
+    // Optional: show penalty badge text
+    const p = normalizePenalty(s.penalty);
+    const penaltyText = (p === "OK") ? "" : p;
+
+    const div = document.createElement("div");
+    div.className = "ao-row";
+    if (r.solve.id === best.solve.id) div.classList.add("best");
+    if (r.solve.id === worst.solve.id) div.classList.add("worst");
+
+    div.innerHTML = `
+      <div class="ao-left">
+        <div class="ao-time">${timeText} ${penaltyText ? `<span class="badge ${p === "DNF" ? "dnf" : "plus2"}">${penaltyText}</span>` : ""}</div>
+        <div class="ao-meta">${escapeHtml(s.scramble || "")}</div>
+        <div class="ao-meta">${escapeHtml(formatTimestamp(s.timestampISO || ""))}</div>
+      </div>
+      <div class="muted">#${r.idx + 1}</div>
+    `;
+
+    elAoList.appendChild(div);
+  });
+}
     
+function openAoModal() {
+  if (!elAoModal) return;
+  renderAoDetails(5);
+  elAoModal.classList.add("show");
+  elAoModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeAoModal() {
+  if (!elAoModal) return;
+  elAoModal.classList.remove("show");
+  elAoModal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
 
   // ----------------------------
   // CFOP Manual (Overview + Full OLL/PLL)
@@ -1369,6 +1453,30 @@ function computeWcaAverage(n){
 
 window.addEventListener("resize", resizeFireworksCanvas);
 
+// Ao5 click -> open details modal
+if (elAo5Tile) {
+  elAo5Tile.addEventListener("click", openAoModal);
+} else if (elStatAo5) {
+  // fallback if tile not found
+  elStatAo5.addEventListener("click", openAoModal);
+}
+
+// Ao modal close
+if (elAoModalClose) elAoModalClose.addEventListener("click", closeAoModal);
+if (elAoModal) {
+  elAoModal.addEventListener("click", (e) => {
+    if (e.target?.dataset?.close === "true") closeAoModal();
+  });
+}
+
+// Esc closes Ao modal
+document.addEventListener("keydown", (e) => {
+  if (elAoModal?.classList.contains("show") && e.key === "Escape") {
+    e.preventDefault();
+    closeAoModal();
+  }
+});
+
 // Modal close buttons/backdrop
 if (elSolveModalClose) elSolveModalClose.addEventListener("click", closeSolveModal);
 if (elSolveModal) {
@@ -1451,18 +1559,35 @@ if (elModalDeleteSolve) {
 document.addEventListener("keydown", (e) => {
   if (!elSolveModal?.classList.contains("show")) return;
 
+  // ✅ IMPORTANT: If user is typing in an input/textarea, ignore shortcuts
+  const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+  const isTyping = tag === "input" || tag === "textarea" || tag === "select" || e.target?.isContentEditable;
+  if (isTyping) return;
+
   // Don't steal Space from timer (and don't scroll)
   if (e.code === "Space") return;
 
   const k = e.key.toLowerCase();
-  if (k === "escape") { e.preventDefault(); closeSolveModal(); }
+
+  if (k === "escape") {
+    e.preventDefault();
+    closeSolveModal();
+    return;
+  }
+
   if (!activeSolveId) return;
 
-  if (k === "2") { e.preventDefault(); setSolvePenalty(activeSolveId, "+2"); }
-  if (k === "d") { e.preventDefault(); setSolvePenalty(activeSolveId, "DNF"); }
-  if (k === "o" || k === "0") { e.preventDefault(); setSolvePenalty(activeSolveId, "OK"); }
+  if (k === "2") {
+    e.preventDefault();
+    setSolvePenalty(activeSolveId, "+2");
+  } else if (k === "d") {
+    e.preventDefault();
+    setSolvePenalty(activeSolveId, "DNF");
+  } else if (k === "o" || k === "0") {
+    e.preventDefault();
+    setSolvePenalty(activeSolveId, "OK");
+  }
 });
-
 if (elSessionSelect) {
   elSessionSelect.addEventListener("change", (e) => {
     const to = Number(e.target.value);
