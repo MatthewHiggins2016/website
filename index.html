@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Cube Timer (3x3)</title>
+  <title>cubemaster.ie</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -113,10 +113,10 @@
             <div class="stat-label">Best</div>
             <div id="statBest" class="stat-value">—</div>
           </div>
-          <div class="stat">
-            <div class="stat-label">Ao5</div>
-            <div id="statAo5" class="stat-value">—</div>
-          </div>
+          <div class="stat" id="ao5StatTile">
+  <div class="stat-label">Ao5</div>
+  <div id="statAo5" class="stat-value">—</div>
+</div>
           <div class="stat">
             <div class="stat-label">Ao12</div>
             <div id="statAo12" class="stat-value">—</div>
@@ -266,6 +266,65 @@
   </div>
 </div>
 
+<!-- Ao5 Details Modal -->
+<div id="aoModal" class="modal" aria-hidden="true">
+  <div class="modal-backdrop" data-close="true"></div>
+
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="aoModalTitle">
+    <div class="modal-header">
+      <h3 id="aoModalTitle">Ao5 Details</h3>
+      <button id="aoModalClose" class="btn btn-ghost" type="button">Close</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="muted" style="margin-bottom:10px;">
+        Last 5 solves (most recent first). Best is <span class="mini-best">green</span>, worst is <span class="mini-worst">red</span>.
+      </div>
+
+      <div id="aoList" class="ao-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Ao5 Details Modal -->
+<div id="aoModal" class="modal" aria-hidden="true">
+  <div class="modal-backdrop" data-close="true"></div>
+
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="aoModalTitle">
+    <div class="modal-header">
+      <h3 id="aoModalTitle">Ao5 Details</h3>
+      <button id="aoModalClose" class="btn btn-ghost" type="button">Close</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="muted" style="margin-bottom:10px;">
+        Last 5 solves (most recent first). Best is <span class="mini-best">green</span>, worst is <span class="mini-worst">red</span>.
+      </div>
+
+      <div id="aoList" class="ao-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Ao5 Details Modal -->
+<div id="aoModal" class="modal" aria-hidden="true">
+  <div class="modal-backdrop" data-close="true"></div>
+
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="aoModalTitle">
+    <div class="modal-header">
+      <h3 id="aoModalTitle">Ao5 Details</h3>
+      <button id="aoModalClose" class="btn btn-ghost" type="button">Close</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="muted" style="margin-bottom:10px;">
+        Last 5 solves (most recent first). Best is <span class="mini-best">green</span>, worst is <span class="mini-worst">red</span>.
+      </div>
+
+      <div id="aoList" class="ao-list"></div>
+    </div>
+  </div>
+</div>
 
 <script src="app.js" defer></script>
 
