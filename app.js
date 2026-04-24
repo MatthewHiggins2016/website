@@ -29,6 +29,11 @@ const LS_PREVIEW_HIDDEN_KEY = "cubeTimer_previewHidden";
   let startTime = 0;
   let rafId = 0;
 
+
+let mobileReadyToStart = false;
+let ignoreNextPointerUp = false;
+
+
   // CFOP data (loaded from JSON ideally)
   let cfopData = null;
 
@@ -41,6 +46,7 @@ const LS_PREVIEW_HIDDEN_KEY = "cubeTimer_previewHidden";
 
   const elTimerDisplay = document.getElementById("timerDisplay");
   const elTimerStateHint = document.getElementById("timerStateHint");
+const elTimerWrap = document.querySelector(".timer-wrap");
 
 const elInspectionDisplay = document.getElementById("inspectionDisplay");
 
@@ -88,6 +94,8 @@ const elManualPenaltyDNF = document.getElementById("manualPenaltyDNF");
 const elManualSaveBtn = document.getElementById("manualSaveBtn");
 const elManualCancelBtn = document.getElementById("manualCancelBtn");
 const elManualError = document.getElementById("manualError");
+
+
 
 
 // ---------- Solve modal refs ----------
@@ -540,7 +548,7 @@ function startInspection() {
   pendingPenaltyMs = 0;
   inspectionStart = performance.now();
 
-  elTimerStateHint.textContent = "Inspection… press Space to start";
+  elTimerStateHint.textContent = "Inspection… tap and hold to start";
   updateInspectionUI();
 
   clearInterval(inspectionInterval);
@@ -553,10 +561,89 @@ function stopInspection() {
   clearInterval(inspectionInterval);
   inspectionInterval = 0;
 
+setMobileReadyState(false);
+
   // Clear inspection label when solve begins
   elInspectionDisplay.textContent = "";
   elInspectionDisplay.classList.remove("warn", "danger");
 }
+
+
+function setMobileReadyState(isReady){
+  mobileReadyToStart = isReady;
+
+  if (elTimerWrap) {
+    elTimerWrap.classList.toggle("ready", isReady);
+  }
+
+  if (isReady) {
+    elTimerStateHint.textContent = "Release to start";
+  } else if (inspecting) {
+    elTimerStateHint.textContent = "Inspection… tap and hold to start";
+  }
+}
+
+function isTouchLikePointer(e){
+  return true;
+}
+
+function onTimerPointerDown(e){
+  if (!isTouchLikePointer(e)) return;
+
+  // Don't let touch interaction work if any modal/overlay is open
+  if (
+    elSolveModal?.classList.contains("show") ||
+    elManualModal?.classList.contains("show") ||
+    elAoModal?.classList.contains("show") ||
+    elOverlay?.classList.contains("show")
+  ) {
+    return;
+  }
+
+  e.preventDefault();
+
+  // If timer is running, touching stops it immediately
+  if (timerRunning) {
+    setMobileReadyState(false);
+    stopTimer();
+    ignoreNextPointerUp = true;
+    return;
+  }
+
+  // If not inspecting yet, first tap starts inspection
+  if (!inspecting) {
+    startInspection();
+    elTimerStateHint.textContent = "Inspection… tap and hold to start";
+    ignoreNextPointerUp = true; // prevents the same tap release from starting the timer
+    return;
+  }
+
+  // If inspecting, touch-and-hold enters ready state
+  setMobileReadyState(true);
+}
+
+function onTimerPointerUp(e){
+  if (!isTouchLikePointer(e)) return;
+  e.preventDefault();
+
+  if (ignoreNextPointerUp) {
+    ignoreNextPointerUp = false;
+    return;
+  }
+
+  // If user was holding during inspection, releasing starts the timer
+  if (inspecting && mobileReadyToStart) {
+    setMobileReadyState(false);
+    stopInspection();
+    startTimer();
+  }
+}
+
+function onTimerPointerCancel(){
+  setMobileReadyState(false);
+  ignoreNextPointerUp = false;
+}
+
 
 function updateInspectionUI() {
   if (!inspecting) return;
@@ -1445,6 +1532,14 @@ function computeWcaAverage(n){
 
   function wireEvents() {
     document.addEventListener("keydown", onKeyDown, { passive: false });
+
+
+if (elTimerWrap) {
+  elTimerWrap.addEventListener("pointerdown", onTimerPointerDown, { passive: false });
+  elTimerWrap.addEventListener("pointerup", onTimerPointerUp, { passive: false });
+  elTimerWrap.addEventListener("pointercancel", onTimerPointerCancel);
+  elTimerWrap.addEventListener("pointerleave", onTimerPointerCancel);
+}
 
     elNewScrambleBtn.addEventListener("click", () => newScramble());
     elCopyScrambleBtn.addEventListener("click", () => copyToClipboard(scramble));
