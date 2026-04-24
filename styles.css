@@ -108,6 +108,12 @@ min-height: 100vh;
   display: grid;
   place-items: center;
   text-align: center;
+
+
+touch-action: none;
+-webkit-user-select: none;
+user-select: none;
+
 }
 
 .timer{
@@ -843,5 +849,14 @@ code{
 }
 #statAo5:hover{
   text-decoration: underline;
+}
+
+.timer-wrap.ready #timerDisplay{
+  color: #4cd964; /* green */
+}
+
+.timer-wrap.ready{
+  border-color: rgba(76, 217, 100, 0.55);
+  box-shadow: 0 0 0 1px rgba(76, 217, 100, 0.18), var(--shadow);
 }
 
