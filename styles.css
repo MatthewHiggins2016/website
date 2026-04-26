@@ -512,9 +512,9 @@ code{
 }
 
 .session-picker select{
-  background: rgba(255,255,255,0.06);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.12);
+  background: #fff;              /* dropdown background */
+  color: #000;                   /* selected text colour */
+  border: 1px solid rgba(0,0,0,0.25);
   border-radius: 10px;
   padding: 6px 10px;
   font-weight: 700;
@@ -522,7 +522,6 @@ code{
   outline: none;
   cursor: pointer;
 }
-
 .session-picker select:focus{
   border-color: rgba(78,161,255,0.55);
 }

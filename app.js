@@ -12,6 +12,7 @@
   const LS_SOLVES_KEY = "cubeTimer_solves";
   const LS_SETTINGS_KEY = "cubeTimer_settings"; // optional future use
 const LS_PREVIEW_HIDDEN_KEY = "cubeTimer_previewHidden"; 
+const MAX_SESSIONS = 10;
 
   const SCRAMBLE_LEN = 20;
   const FACES = ["R", "L", "U", "D", "F", "B"];
@@ -1686,7 +1687,7 @@ document.addEventListener("keydown", (e) => {
 if (elSessionSelect) {
   elSessionSelect.addEventListener("change", (e) => {
     const to = Number(e.target.value);
-    if (to >= 1 && to <= 5) switchSession(to);
+    if (to >= 1 && to <= MAX_SESSIONS) switchSession(to);
   });
 }
 
@@ -1758,7 +1759,7 @@ setPreviewHidden(loadPreviewHiddenSetting());
 function loadCurrentSession() {
   const raw = localStorage.getItem(LS_CURRENT_SESSION_KEY);
   const n = Number(raw);
-  currentSession = Number.isFinite(n) && n >= 1 && n <= 5 ? n : 1;
+  currentSession = Number.isFinite(n) && n >= 1 && n <= MAX_SESSIONS ? n : 1;
 }
 
 function saveCurrentSession() {
